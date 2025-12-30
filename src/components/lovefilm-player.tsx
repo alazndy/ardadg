@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { Heart, Play, Pause, Volume1, Volume2, VolumeX, Music, Maximize, Minimize } from 'lucide-react';
+import { Heart, Play, Pause, Music, Maximize, Minimize } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { Label } from './ui/label';
 
 type AudioSource = {
   name: string;
@@ -33,10 +31,6 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  
-  const [voiceoverVolume, setVoiceoverVolume] = useState(0.9);
-  const [backgroundMusicVolume, setBackgroundMusicVolume] = useState(0.03);
-  const [isMuted, setIsMuted] = useState(false);
   const [isIos, setIsIos] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
 
@@ -57,11 +51,21 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
     const activeBackgroundMusic = backgroundMusicAudioRefs.current[selectedBackgroundMusicIndex];
 
     voiceoverAudioRefs.current.forEach((audio, index) => {
-      if (index !== selectedVoiceoverIndex && audio) audio.pause();
+      if (audio) {
+        audio.volume = 0.9;
+        if (index !== selectedVoiceoverIndex) {
+          audio.pause();
+        }
+      }
     });
 
     backgroundMusicAudioRefs.current.forEach((audio, index) => {
-        if (index !== selectedBackgroundMusicIndex && audio) audio.pause();
+      if (audio) {
+        audio.volume = 0.03;
+        if (index !== selectedBackgroundMusicIndex) {
+          audio.pause();
+        }
+      }
     });
 
     const syncAndPlay = () => {
@@ -117,19 +121,6 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
       video.removeEventListener('ended', handleEnded);
     };
   }, [selectedVoiceoverIndex, selectedBackgroundMusicIndex, unlocked]);
-
-  useEffect(() => {
-      voiceoverAudioRefs.current.forEach(audio => {
-          if (audio) audio.volume = isMuted ? 0 : voiceoverVolume;
-      });
-  }, [voiceoverVolume, isMuted]);
-
-  useEffect(() => {
-    backgroundMusicAudioRefs.current.forEach(audio => {
-        if (audio) audio.volume = isMuted ? 0 : backgroundMusicVolume;
-    });
-}, [backgroundMusicVolume, isMuted]);
-
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -192,8 +183,6 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
     }
   };
 
-  const VolumeIcon = isMuted || (voiceoverVolume === 0 && backgroundMusicVolume === 0) ? VolumeX : voiceoverVolume > 0.5 || backgroundMusicVolume > 0.5 ? Volume2 : Volume1;
-
   return (
     <Card ref={playerRef} className="w-full overflow-hidden shadow-2xl shadow-primary/20 bg-card">
       <CardContent className="p-0">
@@ -201,7 +190,7 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
           <video ref={videoRef} src={videoUrl} className="w-full h-full" onClick={handlePlayPause} muted playsInline />
           {voiceoverSources.map((source, index) => (
             source.url ? <audio key={`vo-${index}`} ref={el => {voiceoverAudioRefs.current[index] = el}} src={source.url} /> : null
-          ))}\
+          ))}
           {backgroundMusicSources.map((source, index) => (
             source.url ? <audio key={`bgm-${index}`} ref={el => {backgroundMusicAudioRefs.current[index] = el}} src={source.url} loop /> : null
           ))}
@@ -229,41 +218,6 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
                 <Button variant="ghost" size="icon" onClick={handlePlayPause}>
                     {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                 </Button>
-
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                        <VolumeIcon className="w-5 h-5" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-56 p-4 space-y-4">
-                    <div className='space-y-2'>
-                        <Label htmlFor="voiceover-volume">Voiceover</Label>
-                        <Slider
-                            id="voiceover-volume"
-                            value={[isMuted ? 0 : voiceoverVolume * 100]}
-                            onValueChange={(v) => {
-                                setVoiceoverVolume(v[0] / 100);
-                                if (v[0] > 0 && isMuted) setIsMuted(false);
-                            }}
-                        />
-                    </div>
-                     <div className='space-y-2'>
-                        <Label htmlFor="bgm-volume">Background Music</Label>
-                        <Slider
-                            id="bgm-volume"
-                            value={[isMuted ? 0 : backgroundMusicVolume * 100]}
-                            onValueChange={(v) => {
-                                setBackgroundMusicVolume(v[0] / 100);
-                                if (v[0] > 0 && isMuted) setIsMuted(false);
-                            }}
-                        />
-                     </div>
-                     <Button variant="outline" size="sm" className="w-full" onClick={() => setIsMuted(!isMuted)}>
-                        {isMuted ? "Unmute All" : "Mute All"}
-                     </Button>
-                  </PopoverContent>
-                </Popover>
             </div>
 
             <div className="flex flex-wrap justify-center items-center gap-2">
@@ -279,7 +233,7 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
                     <Heart className={cn("mr-2 h-4 w-4", selectedVoiceoverIndex === index && "fill-current")} />
                     {source.name}
                   </Button>
-                ))}\
+                ))}
               </div>
                <div className="flex flex-wrap justify-center items-center gap-1 border p-1 rounded-md">
                 {backgroundMusicSources.map((source, index) => (
