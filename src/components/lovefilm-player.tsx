@@ -37,6 +37,12 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
   const [voiceoverVolume, setVoiceoverVolume] = useState(0.9);
   const [backgroundMusicVolume, setBackgroundMusicVolume] = useState(0.03);
   const [isMuted, setIsMuted] = useState(false);
+  const [isIos, setIsIos] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+
+  useEffect(() => {
+    setIsIos(/iPad|iPhone|iPod/.test(navigator.userAgent));
+  }, []);
 
   useEffect(() => {
     voiceoverAudioRefs.current = voiceoverAudioRefs.current.slice(0, voiceoverSources.length);
@@ -110,7 +116,7 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
       video.removeEventListener('durationchange', handleDurationChange);
       video.removeEventListener('ended', handleEnded);
     };
-  }, [selectedVoiceoverIndex, selectedBackgroundMusicIndex]);
+  }, [selectedVoiceoverIndex, selectedBackgroundMusicIndex, unlocked]);
 
   useEffect(() => {
       voiceoverAudioRefs.current.forEach(audio => {
@@ -134,9 +140,26 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
   }, []);
 
   const handlePlayPause = () => {
-      if (videoRef.current) {
-          videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause();
+    if (videoRef.current) {
+      if (isIos && !unlocked) {
+        voiceoverAudioRefs.current.forEach(audio => {
+          if (audio) {
+            audio.play();
+            audio.pause();
+            audio.currentTime = 0;
+          }
+        });
+        backgroundMusicAudioRefs.current.forEach(audio => {
+          if (audio) {
+            audio.play();
+            audio.pause();
+            audio.currentTime = 0;
+          }
+        });
+        setUnlocked(true);
       }
+      videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause();
+    }
   };
 
   const handleSliderSeek = (value: number[]) => {
@@ -175,10 +198,10 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
     <Card ref={playerRef} className="w-full overflow-hidden shadow-2xl shadow-primary/20 bg-card">
       <CardContent className="p-0">
         <div className="relative aspect-video bg-black group">
-          <video ref={videoRef} src={videoUrl} className="w-full h-full" onClick={handlePlayPause} muted />
+          <video ref={videoRef} src={videoUrl} className="w-full h-full" onClick={handlePlayPause} muted playsInline />
           {voiceoverSources.map((source, index) => (
             source.url ? <audio key={`vo-${index}`} ref={el => {voiceoverAudioRefs.current[index] = el}} src={source.url} /> : null
-          ))}
+          ))}\
           {backgroundMusicSources.map((source, index) => (
             source.url ? <audio key={`bgm-${index}`} ref={el => {backgroundMusicAudioRefs.current[index] = el}} src={source.url} loop /> : null
           ))}
@@ -256,7 +279,7 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
                     <Heart className={cn("mr-2 h-4 w-4", selectedVoiceoverIndex === index && "fill-current")} />
                     {source.name}
                   </Button>
-                ))}
+                ))}\
               </div>
                <div className="flex flex-wrap justify-center items-center gap-1 border p-1 rounded-md">
                 {backgroundMusicSources.map((source, index) => (
@@ -270,7 +293,7 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
                     <Music className={cn("mr-2 h-4 w-4", selectedBackgroundMusicIndex === index && "fill-current")} />
                     {source.name}
                   </Button>
-                ))}\
+                ))}
               </div>
             </div>
 
