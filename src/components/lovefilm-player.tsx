@@ -26,7 +26,7 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
   const voiceoverAudioRefs = useRef<(HTMLAudioElement | null)[]>([]);
   const backgroundMusicAudioRefs = useRef<(HTMLAudioElement | null)[]>([]);
   
-  const [selectedVoiceoverIndex, setSelectedVoiceoverIndex] = useState(0);
+  const [selectedVoiceoverIndex, setSelectedVoiceoverIndex] = useState(1);
   const [selectedBackgroundMusicIndex, setSelectedBackgroundMusicIndex] = useState(1);
   
   const [isPlaying, setIsPlaying] = useState(false);
@@ -34,8 +34,8 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
   const [duration, setDuration] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   
-  const [voiceoverVolume, setVoiceoverVolume] = useState(0.75);
-  const [backgroundMusicVolume, setBackgroundMusicVolume] = useState(0.061875);
+  const [voiceoverVolume, setVoiceoverVolume] = useState(0.9);
+  const [backgroundMusicVolume, setBackgroundMusicVolume] = useState(0.03);
   const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
@@ -270,7 +270,7 @@ export default function LoveFilmPlayer({ videoUrl, voiceoverSources, backgroundM
                     <Music className={cn("mr-2 h-4 w-4", selectedBackgroundMusicIndex === index && "fill-current")} />
                     {source.name}
                   </Button>
-                ))}
+                ))}\
               </div>
             </div>
 
