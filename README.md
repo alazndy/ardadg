@@ -1,9 +1,23 @@
-# ardadg: Personal Portfolio
+# ardadg
 
-![Status](https://img.shields.io/badge/Status-Live-success)
+> **Experimental / Personal Project**
 
-**ardadg** is a personal portfolio website project.
+This repository contains personal experimental code or a work-in-progress project.
 
-## 🛠️ Technology
-*   TypeScript
-*   Next.js
+## 🛠️ Tech Stack
+- **Language**: TypeScript (Inferred)
+
+## 📦 Installation
+
+```bash
+pnpm install
+```
+
+## 💻 Usage
+
+```bash
+pnpm dev
+```
+
+## 📄 License
+Private / Proprietary
